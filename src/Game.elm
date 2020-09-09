@@ -49,12 +49,8 @@ init key word replayRoute backRoute =
     }
 
 
-type State
-    = Playing
-    | Lost
-    | Won
-
-
+{-| Computes the score
+-}
 score : Word -> Set Char -> Int
 score word triedChars =
     10 - Set.size (Set.diff triedChars <| Word.toSet word)
@@ -65,8 +61,16 @@ isGuessed triedChars char =
     Set.member char triedChars
 
 
-state : { a | word : Word, triedChars : Set Char } -> State
-state { word, triedChars } =
+type State
+    = Playing
+    | Lost
+    | Won
+
+
+{-| Computes the state
+-}
+state : Word -> Set Char -> State
+state word triedChars =
     if score word triedChars == 0 then
         Lost
 
@@ -92,7 +96,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnKeyPressed char ->
-            case state model of
+            case state model.word model.triedChars of
                 Playing ->
                     ( { model | triedChars = Set.insert char model.triedChars }, Cmd.none )
 
@@ -109,43 +113,25 @@ update msg model =
             ( model, Route.pushUrl model.key Route.Home )
 
 
-keyDecoder : Decoder Msg
-keyDecoder =
-    D.field "key" D.string
-        |> D.andThen
-            (\string ->
-                case String.uncons string of
-                    Just ( char, "" ) ->
-                        if Char.isAlpha char then
-                            D.succeed (OnKeyPressed (Char.toUpper char))
-
-                        else
-                            D.fail "failed to decode letter char"
-
-                    _ ->
-                        D.fail "failed to decode char"
-            )
-
-
 
 -- view
 
 
 view : Model -> Element Msg
 view model =
-    case state model of
+    case state model.word model.triedChars of
         Playing ->
             column
                 [ centerX, centerY, spacing 50 ]
                 [ wordView letterView model.word model.triedChars
-                , imageView (score model.word model.triedChars)
+                , imageView <| score model.word model.triedChars
                 , keyboard OnClickKey model.triedChars
                 ]
 
         Won ->
             column [ centerX, centerY, spacing 50 ]
                 [ wordView letterView model.word model.triedChars
-                , imageView (score model.word model.triedChars)
+                , imageView <| score model.word model.triedChars
                 , column
                     [ centerX, spacing 30, height <| px 150 ]
                     [ el [ centerX ] <| text "Vous avez gagné !"
@@ -159,7 +145,7 @@ view model =
         Lost ->
             column [ centerX, centerY, spacing 50 ]
                 [ wordView letterLostView model.word model.triedChars
-                , imageView (score model.word model.triedChars)
+                , imageView <| score model.word model.triedChars
                 , column
                     [ centerX, spacing 30, height <| px 150 ]
                     [ el [ centerX ] <| text "Vous avez perdu !"
@@ -280,3 +266,21 @@ keyView clickedKey char isDisabled =
 subscriptions : Sub Msg
 subscriptions =
     Browser.Events.onKeyPress keyDecoder
+
+
+keyDecoder : Decoder Msg
+keyDecoder =
+    D.field "key" D.string
+        |> D.andThen
+            (\string ->
+                case String.uncons string of
+                    Just ( char, "" ) ->
+                        if Char.isAlpha char then
+                            D.succeed (OnKeyPressed (Char.toUpper char))
+
+                        else
+                            D.fail "failed to decode letter char"
+
+                    _ ->
+                        D.fail "failed to decode char"
+            )
