@@ -1,5 +1,4 @@
-{
-    "words": [
+words = [
         "ABALONES",
         "ABDUCTION",
         "ABDUCTIONS",
@@ -1917,5 +1916,4 @@
         "ZONES",
         "ZOO",
         "ZOOS"
-    ]
-}
+    ];

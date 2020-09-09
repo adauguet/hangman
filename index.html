@@ -1,6 +1,5 @@
 <html>
 <head>
-	<title>Pendu</title>
   <style>
 	  body {
 		  height: 100vh;
@@ -8,13 +7,17 @@
 		  display: flex;
 		}
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
   <main></main>
-  <script src="elm.js"></script>
+  <script src="elm.min.js"></script>
+  <script type="text/javascript" src="words.js"></script>
   <script>
-    var app = Elm.Main.init({ node: document.querySelector('main') })
-    // you can use ports and stuff here
+    var app = Elm.Main.init({
+      node: document.querySelector('main'),
+      flags: words
+    })
   </script>
 </body>
 </html>
